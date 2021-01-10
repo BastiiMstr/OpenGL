@@ -5,6 +5,9 @@
 #include<string>
 #include<sstream>
 
+ 
+
+
 struct ShaderProgramSource
 {
     std::string VertexSource;
@@ -90,6 +93,11 @@ int main(void)
     if (!glfwInit())
         return -1;
 
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
     if (!window)
@@ -100,6 +108,7 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK)
         std::cout << "mamy problem klej nie dziala" << std::endl;
@@ -117,6 +126,12 @@ int main(void)
         2 , 3 , 0
     };
 
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
+
+    //Buffor
     unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -130,32 +145,49 @@ int main(void)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuff);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indexes, GL_DYNAMIC_DRAW);
 
+    //Shader
     ShaderProgramSource source = ParseShader("Shader.shader");
-    std::cout << "Vertex" << std::endl;
-    std::cout << source.VertexSource << std::endl;
-    std::cout << "Fragment" << std::endl;
-    std::cout << source.FragmentSource << std::endl;
-
-
-
-
+    unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
+    glUseProgram(shader);
+    
+    //Unbind buffers
+    glUseProgram(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
+    //Uniform
+
+    int location = glGetUniformLocation(shader, "u_Color");
     
 
-        unsigned int shader = CreateShader(source.VertexSource,source.FragmentSource);
-        glUseProgram(shader);
+    float r = 0.0f;
+    float translate = 0.05f;
 
-
-
-
-    /* Loop until the user closes the window */
+    //Update 
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
+        //binding again
+        glUseProgram(shader);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuff);
 
+        //Uniform
+        glUniform4f(location, r, 0.3f, 0.5f, 1.0f);
+
+        //Drawings
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        
+
+        if (r > 1.0f)
+            translate = -0.05f;
+        else if (r < 0.0f)
+            translate = 0.05f;
+
+        r += translate;
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -167,4 +199,12 @@ int main(void)
     glDeleteProgram(shader);
     glfwTerminate();
     return 0;
+}
+
+void moveObject(float *pos)
+{
+    for (int i=0;i<sizeof(pos);i++)
+    {
+        pos[i] += 0.01f;
+    }
 }
