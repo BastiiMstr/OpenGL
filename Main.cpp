@@ -5,6 +5,10 @@
 #include<string>
 #include<sstream>
 
+#include "src/Renderer.h"
+#include "src/VertexBuffer.h"
+#include "src/IndexBuffer.h"
+#include "src/VertexArray.h"
  
 
 
@@ -127,36 +131,33 @@ int main(void)
     };
 
     unsigned int vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    GLCall(glGenVertexArrays(1, &vao));
+    GLCall(glBindVertexArray(vao));
 
+    //Vertex Array and buffer initialization
+    VertexArray va;
+    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    VertexBufferLayout layout;
+    layout.Push<float>(2);
+    va.AddBuffer(vb, layout);
 
-    //Buffor
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), positions, GL_DYNAMIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT , GL_FALSE, sizeof(float) * 2, 0);
-
-    unsigned int ibuff;
-    glGenBuffers(1, &ibuff);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuff);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indexes, GL_DYNAMIC_DRAW);
+    //Buffer index
+    IndexBuffer ib(indexes, 6);
+    
 
     //Shader
     ShaderProgramSource source = ParseShader("Shader.shader");
     unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-    glUseProgram(shader);
+    GLCall(glUseProgram(shader));
     
-    //Unbind buffers
-    glUseProgram(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    
-    //Uniform
 
+    GLCall(glBindVertexArray(0));
+    GLCall(glUseProgram(0));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+    
+    
+    //Searching uniform variable
     int location = glGetUniformLocation(shader, "u_Color");
     
 
@@ -169,17 +170,16 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         //binding again
-        glUseProgram(shader);
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibuff);
+        GLCall(glUseProgram(shader));
+        va.Bind();
+        ib.Bind();
+
 
         //Uniform
-        glUniform4f(location, r, 0.3f, 0.5f, 1.0f);
+        GLCall(glUniform4f(location, r, 0.3f, 0.5f, 1.0f));
 
         //Drawings
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
         
 
         if (r > 1.0f)
@@ -196,15 +196,7 @@ int main(void)
         glfwPollEvents();
     }
 
-    glDeleteProgram(shader);
+    GLCall(glDeleteProgram(shader));
     glfwTerminate();
     return 0;
-}
-
-void moveObject(float *pos)
-{
-    for (int i=0;i<sizeof(pos);i++)
-    {
-        pos[i] += 0.01f;
-    }
 }
