@@ -1,5 +1,6 @@
-#include<GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "include/GL/glew.h"
+#include "include/GLFW/glfw3.h"
+
 #include<iostream>
 #include<fstream>
 #include<string>
@@ -9,84 +10,8 @@
 #include "src/VertexBuffer.h"
 #include "src/IndexBuffer.h"
 #include "src/VertexArray.h"
+#include "Shader/Shader.h"
  
-
-
-struct ShaderProgramSource
-{
-    std::string VertexSource;
-    std::string FragmentSource;
-};
-
-static ShaderProgramSource ParseShader(const std::string& filepath)
-{
-    std::ifstream stream(filepath);
-
-    enum class ShaderType
-    {
-        NONE = -1, VERTEX = 0, FRAGMENT = 1
-    };
-
-    std::string line;
-    std::stringstream ss[2];
-    ShaderType type = ShaderType::NONE;
-
-    while (getline(stream, line))
-    {
-        if (line.find("#vertex") != std::string::npos)
-            type = ShaderType::VERTEX;
-        else if (line.find("#fragment") != std::string::npos)
-            type = ShaderType::FRAGMENT;
-        else
-        {
-            ss[(int)type] << line << '\n';
-        }
-    }
-    return{ ss[0].str(),ss[1].str() };
-}
-
-static unsigned int CompileShader(unsigned int type, const std::string& source)
-{
-    unsigned int id = glCreateShader(type);
-    const char* src = source.c_str();
-    glShaderSource(id, 1, &src, nullptr);
-    glCompileShader(id);
-
-    int result;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
-
-    if (result == GL_FALSE)
-    {
-        int length;
-        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
-        char* message = (char*)alloca(length * sizeof(char));
-        glGetShaderInfoLog(id, length, &length, message);
-
-        std::cout << "nie dziala nam shader" << std::endl;
-        std::cout << message << std::endl;
-        
-        glDeleteShader(id);
-        return 0;
-    }
-    return id;
-}
-
-static unsigned int CreateShader(const std::string& vertexShader, const std::string& fragmentShader)
-{
-    unsigned int program = glCreateProgram();
-    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
-    glValidateProgram(program);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    return program;
-}
 
 
 int main(void)
@@ -141,25 +66,21 @@ int main(void)
     layout.Push<float>(2);
     va.AddBuffer(vb, layout);
 
-    //Buffer index
+    //Index Buffer
     IndexBuffer ib(indexes, 6);
     
 
     //Shader
-    ShaderProgramSource source = ParseShader("Shader.shader");
-    unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-    GLCall(glUseProgram(shader));
+    Shader shader("Shader.shader");
+    shader.Bind(); //teoretycznie mozna wyrzucic bo nie zmieniam nic w aktualnym ustawieniu shadera
+    
+    //Unbinding VertexArray, VertexBuffers, indexBuffer and Shader
+    va.Unbind();
+    vb.Unbind();
+    shader.Unbind();
+    ib.Unbind();
     
 
-    GLCall(glBindVertexArray(0));
-    GLCall(glUseProgram(0));
-    GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-    GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    
-    
-    //Searching uniform variable
-    int location = glGetUniformLocation(shader, "u_Color");
-    
 
     float r = 0.0f;
     float translate = 0.05f;
@@ -170,13 +91,13 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT);
 
         //binding again
-        GLCall(glUseProgram(shader));
+        shader.Bind();
         va.Bind();
         ib.Bind();
 
 
         //Uniform
-        GLCall(glUniform4f(location, r, 0.3f, 0.5f, 1.0f));
+        GLCall(shader.SetUniform4f("u_Color", r, 0.3f, 0.5f, 1.0f));
 
         //Drawings
         GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
@@ -196,7 +117,6 @@ int main(void)
         glfwPollEvents();
     }
 
-    GLCall(glDeleteProgram(shader));
     glfwTerminate();
     return 0;
 }

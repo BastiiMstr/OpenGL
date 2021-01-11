@@ -6,7 +6,7 @@
 #include<string>
 #include<sstream>
 
-#include<GL/glew.h>
+#include "../include/GL/glew.h"
 
 
 
@@ -105,12 +105,15 @@ void Shader::Unbind() const
 
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
-    GLCall(glUniform4f(name, v0, v1, v2, v3));
+    GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
-unsigned int Shader::GetUniformsLocation(const std::string& name)
+unsigned int Shader::GetUniformLocation(const std::string& name)
 {
-    GLCall(glGetUniformLocation(m_RendererID, name.c_str()));
+    GLCall(int  location = glGetUniformLocation(m_RendererID, name.c_str()));
+    if (location == -1)
+        std::cout << "Warning uniform '" << name << "' does not exist" << std::endl;
+    return location;
 }
 
 
