@@ -12,6 +12,7 @@
 #include "src/IndexBuffer.h"
 #include "src/VertexArray.h"
 #include "Shader/Shader.h"
+#include "textures/Textures.h"
  
 
 
@@ -45,10 +46,10 @@ int main(void)
 
 
     float positions[] = {
-        -0.5f , 0.5f,
-         0.5f , 0.5f,
-         0.5f ,-0.5f,
-        -0.5f ,-0.5f
+        -0.5f , 0.5f, 0.0f, 0.0f,
+         0.5f , 0.5f, 1.0f, 0.0f,
+         0.5f ,-0.5f, 1.0f, 1.0f,
+        -0.5f ,-0.5f, 0.0f, 1.0f
     };
 
     unsigned int indexes[] = {
@@ -56,14 +57,18 @@ int main(void)
         2 , 3 , 0
     };
 
+    GLCall(glEnable(GL_BLEND));
+    GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
     unsigned int vao;
     GLCall(glGenVertexArrays(1, &vao));
     GLCall(glBindVertexArray(vao));
 
     //Vertex Array and buffer initialization
     VertexArray va;
-    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    VertexBuffer vb(positions, 4 * 4 * sizeof(float));
     VertexBufferLayout layout;
+    layout.Push<float>(2);
     layout.Push<float>(2);
     va.AddBuffer(vb, layout);
 
@@ -76,6 +81,11 @@ int main(void)
     shader.Bind(); //teoretycznie mozna wyrzucic bo nie zmieniam nic w aktualnym ustawieniu shadera
 
     Renderer renderer;
+
+    Texture texture("PNG/plane.png");
+    texture.Bind();
+
+    shader.SetUniform1i("u_Texture", 0);
 
     //Unbinding VertexArray, VertexBuffers, indexBuffer and Shader
     va.Unbind();
