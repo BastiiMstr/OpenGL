@@ -110,9 +110,15 @@ void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2,
 
 unsigned int Shader::GetUniformLocation(const std::string& name)
 {
+    if (m_UniformLocationCashe.find(name) != m_UniformLocationCashe.end())
+        return m_UniformLocationCashe[name];
+
     GLCall(int  location = glGetUniformLocation(m_RendererID, name.c_str()));
     if (location == -1)
         std::cout << "Warning uniform '" << name << "' does not exist" << std::endl;
+    else
+        m_UniformLocationCashe[name] = location; //maybe
+
     return location;
 }
 
