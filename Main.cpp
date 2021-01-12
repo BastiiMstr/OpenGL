@@ -8,6 +8,7 @@
 
 #include "src/Renderer.h"
 #include "src/VertexBuffer.h"
+#include "src/VertexBufferLayout.h"
 #include "src/IndexBuffer.h"
 #include "src/VertexArray.h"
 #include "Shader/Shader.h"
@@ -34,7 +35,7 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-
+    {
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -68,18 +69,20 @@ int main(void)
 
     //Index Buffer
     IndexBuffer ib(indexes, 6);
-    
+
 
     //Shader
     Shader shader("Shader.shader");
     shader.Bind(); //teoretycznie mozna wyrzucic bo nie zmieniam nic w aktualnym ustawieniu shadera
-    
+
+    Renderer renderer;
+
     //Unbinding VertexArray, VertexBuffers, indexBuffer and Shader
     va.Unbind();
     vb.Unbind();
     shader.Unbind();
     ib.Unbind();
-    
+
 
 
     float r = 0.0f;
@@ -88,20 +91,13 @@ int main(void)
     //Update 
     while (!glfwWindowShouldClose(window))
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        renderer.Clear();
 
-        //binding again
+
         shader.Bind();
-        va.Bind();
-        ib.Bind();
-
-
-        //Uniform
         GLCall(shader.SetUniform4f("u_Color", r, 0.3f, 0.5f, 1.0f));
 
-        //Drawings
-        GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-        
+        renderer.Draw(va, ib, shader);
 
         if (r > 1.0f)
             translate = -0.05f;
@@ -116,7 +112,7 @@ int main(void)
         /* Poll for and process events */
         glfwPollEvents();
     }
-
+}
     glfwTerminate();
     return 0;
 }
