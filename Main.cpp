@@ -46,10 +46,10 @@ int main(void)
 
 
     float positions[] = {
-        -0.5f , 0.5f, 0.0f, 0.0f,
-         0.5f , 0.5f, 1.0f, 0.0f,
-         0.5f ,-0.5f, 1.0f, 1.0f,
-        -0.5f ,-0.5f, 0.0f, 1.0f
+        -0.9f , -0.1f, 0.0f, 0.0f, //dolny lewy
+        -0.74f , -0.1f, 1.0f, 0.0f, //dolny prawy
+        -0.74f , 0.1f, 1.0f, 1.0f,
+        -0.9f , 0.1f, 0.0f, 1.0f
     };
 
     unsigned int indexes[] = {
@@ -82,7 +82,7 @@ int main(void)
 
     Renderer renderer;
 
-    Texture texture("PNG/plane.png");
+    Texture texture("textures/PNG/plane.png");
     texture.Bind();
 
     shader.SetUniform1i("u_Texture", 0);
@@ -105,7 +105,6 @@ int main(void)
 
 
         shader.Bind();
-        GLCall(shader.SetUniform4f("u_Color", r, 0.3f, 0.5f, 1.0f));
 
         renderer.Draw(va, ib, shader);
 
