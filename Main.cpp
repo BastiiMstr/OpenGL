@@ -1,5 +1,7 @@
-#include "include/GL/glew.h"
-#include "include/GLFW/glfw3.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include<iostream>
 #include<fstream>
@@ -13,7 +15,7 @@
 #include "src/VertexArray.h"
 #include "Shader/Shader.h"
 #include "textures/Textures.h"
- 
+
 
 
 int main(void)
@@ -75,10 +77,16 @@ int main(void)
     //Index Buffer
     IndexBuffer ib(indexes, 6);
 
+    glm::mat4 proj = glm::ortho(-8.0f, 8.0f, -4.5f, 4.5f, -1.0f, 1.0f);
+
+    //teraz -8 to jest nasze max left
+    //-4.5 nasze bottom
 
     //Shader
     Shader shader("Shader.shader");
     shader.Bind(); //teoretycznie mozna wyrzucic bo nie zmieniam nic w aktualnym ustawieniu shadera
+    shader.SetUniformMat4f("u_MVP", proj);
+
 
     Renderer renderer;
 
