@@ -147,8 +147,14 @@
   <ItemGroup>
     <ClCompile Include="include\glm\detail\glm.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="outside\imGui\imgui.cpp" />
+    <ClCompile Include="outside\imGui\imgui_demo.cpp" />
+    <ClCompile Include="outside\imGui\imgui_draw.cpp" />
+    <ClCompile Include="outside\imGui\imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="outside\stb_image\stb_image.cpp" />
     <ClCompile Include="Shader\Shader.cpp" />
+    <ClCompile Include="src\Figures.cpp" />
+    <ClCompile Include="src\GameObject.cpp" />
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\VertexArray.cpp" />
@@ -577,8 +583,17 @@
     <ClInclude Include="include\glm\vec3.hpp" />
     <ClInclude Include="include\glm\vec4.hpp" />
     <ClInclude Include="include\glm\vector_relational.hpp" />
+    <ClInclude Include="outside\imGui\imconfig.h" />
+    <ClInclude Include="outside\imGui\imgui.h" />
+    <ClInclude Include="outside\imGui\imgui_impl_glfw_gl3.h" />
+    <ClInclude Include="outside\imGui\imgui_internal.h" />
+    <ClInclude Include="outside\imGui\stb_rect_pack.h" />
+    <ClInclude Include="outside\imGui\stb_textedit.h" />
+    <ClInclude Include="outside\imGui\stb_truetype.h" />
     <ClInclude Include="outside\stb_image\stb_image.h" />
     <ClInclude Include="Shader\Shader.h" />
+    <ClInclude Include="src\Figures.h" />
+    <ClInclude Include="src\GameObject.h" />
     <ClInclude Include="src\IndexBuffer.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\VertexArray.h" />

@@ -7,6 +7,9 @@ Texture::Texture(const std::string &path)
 	stbi_set_flip_vertically_on_load(1);
 	m_LocalBuffer = stbi_load(path.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
+	buffList.push_back(path);
+
+
 	GLCall(glGenTextures(1, &m_RendererID));
 	GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
 
@@ -37,3 +40,46 @@ void Texture::Unbind() const
 {
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 }
+
+void Texture::AddNewTexture(const std::string& path)
+{
+	buffList.push_back(path);
+}
+
+void Texture::ChangeImage()
+{
+
+	if (buffList.size() > 1)
+	{
+		if (!reverse)
+		{
+			if (buffListPos + 1 != buffList.size() && !reverse)
+				buffListPos++;
+			else
+				reverse = true;
+		}
+		else
+		{
+			if (buffListPos != 0)
+				buffListPos--;
+			else
+				reverse = false;
+		}
+
+		m_LocalBuffer = stbi_load(buffList[buffListPos].c_str(), &m_Width, &m_Height, &m_BPP, 4);
+
+		//GLCall(glGenTextures(1, &m_RendererID));
+		GLCall(glBindTexture(GL_TEXTURE_2D, m_RendererID));
+
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer));
+		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+
+		
+
+		if (m_LocalBuffer)
+			stbi_image_free(m_LocalBuffer);
+		Unbind();
+	}
+}
+
+
